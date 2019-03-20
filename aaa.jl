@@ -12,6 +12,7 @@ function aaa(F::Any, Z::Any, tol::Float64=1e-13, mmax::Int64=100)
 #         z, f, w = vectors of support pts, function values, weights
 #         errvec = vector of errors at each step
 # ------------------------------------------------------------------------------------- #
+    Z = collect(Z);
     M = length(Z);                             # number of sample point
     if isa(F, Function) == true; F = F(Z) end; # convert function handle to vector
     Z = Z[:]; F = F[:];                        # work with column vectors
@@ -101,15 +102,70 @@ function cleanup(r, pol, res, zer, z, f, w, Z, F)
 end # cleanup
 
 # ------------------------------------------------------------------------------------- #
-# fun example with Froissart doublets when tol = 0 and cleanup disabled
-Z = exp.(LinRange(0,2im*pi,1000)); G(z) = log.(2 .+ z .^ 4) ./ (1 .- 16 .* z .^ 4);
-r, pol, res, zer, z, f, w, errvec = aaa(G, Z, 0.0);
-r, pol, res, zer, z, f, w, errvec = aaa(G, Z, 0.4e-14);
-scatter(pol)
-scatter(res)
-scatter(zer)
-scatter(z)
-scatter(f)
-scatter(w)
-plot(errvec, yscale = :log10)
-plot(r(Z))
+# Example 1
+X = LinRange(-1,1,1000);
+G(x) = sign.(x);
+r, pol, res, zer, z, f, w, errvec = aaa(G, X);
+plot(X, G(X), label = "F(x) = sign(x)", title = "function vs. approximation")
+plot!(X, real(r(X)), linestyle = :dash, label = "R(x) = approx.",
+        legend = :bottomright)
+png("e1app")
+scatter(pol, label = "poles", legend = :topleft, title = "poles and unit circle")
+plot!(Z, label = "unit circle", aspect_ratio = :equal)
+png("e1pol")
+plot(errvec, label = "error", yscale = :log10, ylabel = "norm(F - R, Inf)",
+     title = "approximation error", xlabel = "n: type(n, n) approx.")
+png("e1err")
+# ------------------------------------------------------------------------------------- #
+# Example 2
+X = LinRange(-1,1,1000);
+G(x) = 1 ./ (2 .+ cos.(20x .+ 1));
+r, pol, res, zer, z, f, w, errvec = aaa(G, X);
+plot(X, G(X), label = "F(x) = 1 / (2 + cos(20x + 1))",
+     title = "function vs. approximation")
+plot!(X, real(r(X)), linestyle = :dash, label = "R(x) = approx.")
+png("e2app")
+scatter(pol, label = "poles", legend = :topleft, title = "poles and unit circle")
+plot!(Z, label = "unit circle", aspect_ratio = :equal)
+png("e2pol")
+plot(errvec, label = "error", yscale = :log10, ylabel = "norm(F - R, Inf)",
+     title = "approximation error", xlabel = "n: type(n, n) approx.")
+png("e2err")
+# ------------------------------------------------------------------------------------- #
+# Example 3
+Z = exp.(LinRange(0,2im*pi,1000));
+G(z) = log.(1.44 .- z .^2);
+r, pol, res, zer, z, f, w, errvec = aaa(G, Z);
+plot(real(Z), real(G(Z)), label = "F(z) = log(1.44 - z^2)",
+     title = "function vs. approximation (real part)")
+plot!(real(Z), real(r(Z)), linestyle = :dash, label = "R(x) = approx.")
+png("e3appre")
+plot(imag(Z), imag(G(Z)), label = "F(z) = log(1.44 - z^2)",
+     title = "function vs. approximation (complex part)")
+plot!(imag(Z), imag(r(Z)), linestyle = :dash, label = "R(x) = approx.")
+png("e3appim")
+scatter(pol, label = "poles", legend = :topleft, title = "poles and unit circle")
+plot!(Z, label = "unit circle")
+png("e3pol")
+plot(errvec, label = "error", yscale = :log10, ylabel = "norm(F - R, Inf)",
+     title = "approximation error", xlabel = "n: type(n, n) approx.")
+png("e3err")
+# ------------------------------------------------------------------------------------- #
+# Example 4
+Z = exp.(LinRange(0,2im*pi,1000));
+G(z) = log.(2 .+ z .^ 4) ./ (1 .- 16 .* z .^ 4);
+r, pol, res, zer, z, f, w, errvec = aaa(G, Z);
+plot(real(Z), real(G(Z)), label = "F(z) = log(2 + z^4) / (1 - 16*z^4)",
+     title = "function vs. approximation (real part)")
+plot!(real(Z), real(r(Z)), linestyle = :dash, label = "R(x) = approx.")
+png("e4appre")
+plot(imag(Z), imag(G(Z)), label = "F(z) = log(2 + z^4) / (1 - 16*z^4)",
+     title = "function vs. approximation (complex part)")
+plot!(imag(Z), imag(r(Z)), linestyle = :dash, label = "R(x) = approx.")
+png("e4appim")
+scatter(pol, label = "poles", legend = :topleft, title = "poles and unit circle")
+plot!(Z, label = "unit circle", aspect_ratio = :equal)
+png("e4pol")
+plot(errvec, label = "error", yscale = :log10, ylabel = "norm(F - R, Inf)",
+     title = "approximation error", xlabel = "n: type(n, n) approx.")
+png("e4err")
